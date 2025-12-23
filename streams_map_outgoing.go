@@ -56,9 +56,13 @@ func (m *outgoingStreamsMap[T]) OpenStream() (T, error) {
 		return *new(T), m.closeErr
 	}
 
+	// 添加：每次调用都打印
+	log.Printf("[===QUIC Streams (OpenStream)====] openQueue: %d, nextStream: %d, maxStream: %d", 
+		len(m.openQueue), m.nextStream, m.maxStream)
+
 	// if there are OpenStreamSync calls waiting, return an error here
 	if len(m.openQueue) > 0 || m.nextStream > m.maxStream {
-		log.Printf("[===QUIC Streams===] openQueue: %d, nextStream: %d, maxStream: %d", 
+		log.Printf("[=== QUIC Streams (Reach Limit)===] openQueue: %d, nextStream: %d, maxStream: %d", 
         len(m.openQueue), m.nextStream, m.maxStream)
 		m.maybeSendBlockedFrame()
 		return *new(T), &StreamLimitReachedError{}
@@ -118,6 +122,11 @@ func (m *outgoingStreamsMap[T]) openStream() T {
 	s := m.newStream(m.nextStream)
 	m.streams[m.nextStream] = s
 	m.nextStream++
+
+	// 添加：每次成功打开流都打印
+	log.Printf("[===QUIC Streams (openStream)===] openQueue: %d, nextStream: %d, maxStream: %d", 
+		len(m.openQueue), m.nextStream, m.maxStream)
+	
 	return s
 }
 
