@@ -4,6 +4,7 @@ import (
 	"context"
 	"slices"
 	"sync"
+	"log"
 
 	"github.com/quic-go/quic-go/internal/protocol"
 	"github.com/quic-go/quic-go/internal/wire"
@@ -57,6 +58,8 @@ func (m *outgoingStreamsMap[T]) OpenStream() (T, error) {
 
 	// if there are OpenStreamSync calls waiting, return an error here
 	if len(m.openQueue) > 0 || m.nextStream > m.maxStream {
+		log.Printf("[===QUIC Streams===] openQueue: %d, nextStream: %d, maxStream: %d", 
+        len(m.openQueue), m.nextStream, m.maxStream)
 		m.maybeSendBlockedFrame()
 		return *new(T), &StreamLimitReachedError{}
 	}
